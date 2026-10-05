@@ -4,8 +4,14 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "base", "value": "http://localhost:8080" },
-    { "key": "doctorId", "value": "PASTE-A-DOCTOR-ID-HERE" }
+    {
+      "value": "http://localhost:8080",
+      "key": "base"
+    },
+    {
+      "value": "00000000-0000-0000-0000-000000000000",
+      "key": "doctorId"
+    }
   ],
   "item": [
     {
@@ -30,15 +36,20 @@
       }
     },
     {
-      "name": "A4 - Save appointment w/ double-booking check (DERIVED)",
+      "name": "A4 - Save appointment (DERIVED)",
       "request": {
-        "method": "POST",
-        "header": [{"key": "Content-Type", "value": "application/json"}],
-        "url": "{{base}}/api/appointments/save",
         "body": {
-          "mode": "raw",
-          "raw": "{\n  \"appointmentDate\": \"2026-10-15\",\n  \"reason\": \"Checkup\",\n  \"status\": \"SCHEDULED\",\n  \"doctor\": { \"id\": \"{{doctorId}}\" },\n  \"patient\": { \"id\": \"00000000-0000-0000-0000-000000000000\" }\n}"
-        }
+          "raw": "{\"appointmentDate\":\"2026-10-15\",\"reason\":\"Checkup\",\"status\":\"SCHEDULED\",\"doctor\":{\"id\":\"{{doctorId}}\"},\"patient\":{\"id\":\"{{doctorId}}\"}}",
+          "mode": "raw"
+        },
+        "header": [
+          {
+            "value": "application/json",
+            "key": "Content-Type"
+          }
+        ],
+        "method": "POST",
+        "url": "{{base}}/api/appointments/save"
       }
     },
     {
