@@ -1,0 +1,115 @@
+{
+  "info": {
+    "name": "Kigali Clinic Quiz",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base", "value": "http://localhost:8080" },
+    { "key": "doctorId", "value": "PASTE-A-DOCTOR-ID-HERE" }
+  ],
+  "item": [
+    {
+      "name": "A1 - Patients by last name (DERIVED)",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/patients/by-last-name?lastName=uwase"
+      }
+    },
+    {
+      "name": "A2 - Appointments by status (DERIVED)",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/appointments/by-status?status=SCHEDULED"
+      }
+    },
+    {
+      "name": "A3 - Appointments between dates (DERIVED)",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/appointments/between?start=2026-10-01&end=2026-10-31"
+      }
+    },
+    {
+      "name": "A4 - Save appointment w/ double-booking check (DERIVED)",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "url": "{{base}}/api/appointments/save",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"appointmentDate\": \"2026-10-15\",\n  \"reason\": \"Checkup\",\n  \"status\": \"SCHEDULED\",\n  \"doctor\": { \"id\": \"{{doctorId}}\" },\n  \"patient\": { \"id\": \"00000000-0000-0000-0000-000000000000\" }\n}"
+        }
+      }
+    },
+    {
+      "name": "B1 - Doctors by specialization (JPQL)",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/doctors/by-specialization?name=cardiology"
+      }
+    },
+    {
+      "name": "B2 - Doctors without office (JPQL)",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/doctors/without-office"
+      }
+    },
+    {
+      "name": "B3 - Unused specializations (JPQL)",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/specializations/unused"
+      }
+    },
+    {
+      "name": "B4 - Patients of a doctor (JPQL)",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/patients/of-doctor/{{doctorId}}"
+      }
+    },
+    {
+      "name": "C1 - Stats by status (JPQL)",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/appointments/stats/by-status"
+      }
+    },
+    {
+      "name": "C2 - Frequent patients (JPQL)",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/patients/frequent?min=3"
+      }
+    },
+    {
+      "name": "C3 - Busiest office (JPQL)",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/offices/busiest"
+      }
+    },
+    {
+      "name": "C4 - Cancel doctor day (JPQL UPDATE)",
+      "request": {
+        "method": "PATCH",
+        "url": "{{base}}/api/appointments/cancel-day?doctorId={{doctorId}}&date=2026-10-20"
+      }
+    },
+    {
+      "name": "Bonus +5 - Paginate appointments",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/appointments/page?page=0&size=5&sort=appointmentDate,desc"
+      }
+    },
+    {
+      "name": "Bonus +5 - Delete cancelled before",
+      "request": {
+        "method": "DELETE",
+        "url": "{{base}}/api/appointments/cancelled-before?date=2026-10-15"
+      }
+    }
+  ]
+}
