@@ -31,12 +31,14 @@ public class AppointmentController {
     @Autowired
     private AppointmentService appointmentService;
 
-    // A4: Save with double-booking check
     @PostMapping("/save")
     public ResponseEntity<String> saveAppointment(@RequestBody Appointment appointment) {
         String result = appointmentService.saveAppointment(appointment);
         if (result.contains("already booked")) {
             return new ResponseEntity<>(result, HttpStatus.CONFLICT);
+        }
+        if (result.contains("cannot be in the past")) {
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
@@ -46,31 +48,53 @@ public class AppointmentController {
         return appointmentService.getAllAppointments();
     }
 
-    // A2
     @GetMapping("/by-status")
     public List<Appointment> getByStatus(@RequestParam AppointmentStatus status) {
         return appointmentService.getByStatus(status);
     }
 
-    // A3
     @GetMapping("/between")
     public List<Appointment> getBetweenDates(@RequestParam String start, @RequestParam String end) {
         return appointmentService.getBetweenDates(Date.valueOf(start), Date.valueOf(end));
     }
 
-    // C1 (path fixed to /stats/by-status)
     @GetMapping("/stats/by-status")
     public List<Object[]> getCountPerStatus() {
         return appointmentService.getCountPerStatus();
     }
 
-    // C4
     @PatchMapping("/cancel-day")
     public String cancelDay(@RequestParam UUID doctorId, @RequestParam String date) {
         return appointmentService.cancelAppointmentsForDay(doctorId, Date.valueOf(date));
     }
 
-    // Bonus +5: Pagination
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<String> changeStatus(@org.springframework.web.bind.annotation.PathVariable UUID id, @RequestParam AppointmentStatus status) {
+        String result = appointmentService.changeStatus(id, status);
+        if (result.contains("does not exist")) {
+            return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+        }
+        if (result.contains("Cannot change status")) {
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}/reschedule")
+    public ResponseEntity<String> reschedule(@org.springframework.web.bind.annotation.PathVariable UUID id, @RequestParam String newDate) {
+        String result = appointmentService.reschedule(id, Date.valueOf(newDate));
+        if (result.contains("does not exist")) {
+            return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+        }
+        if (result.contains("cannot be rescheduled") || result.contains("cannot be in the past")) {
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+        }
+        if (result.contains("already booked")) {
+            return new ResponseEntity<>(result, HttpStatus.CONFLICT);
+        }
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
     @GetMapping("/page")
     public Page<Appointment> getPage(
             @RequestParam int page,
@@ -83,7 +107,6 @@ public class AppointmentController {
         return appointmentService.getPage(pageable);
     }
 
-    // Bonus +5: Delete cancelled before date
     @DeleteMapping("/cancelled-before")
     public String deleteCancelledBefore(@RequestParam String date) {
         return appointmentService.deleteCancelledBefore(Date.valueOf(date));

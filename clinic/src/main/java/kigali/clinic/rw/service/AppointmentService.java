@@ -1,6 +1,7 @@
 package kigali.clinic.rw.service;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +22,10 @@ public class AppointmentService {
     private AppointmentRepository appointmentRepo;
 
     public String saveAppointment(Appointment appointment) {
+        Date today = Date.valueOf(LocalDate.now());
+        if (appointment.getAppointmentDate().before(today)) {
+            return "Appointment date cannot be in the past";
+        }
         boolean isBooked = appointmentRepo.existsByDoctorIdAndAppointmentDateAndStatusNot(
                 appointment.getDoctor().getId(),
                 appointment.getAppointmentDate(),
@@ -29,6 +34,7 @@ public class AppointmentService {
         if (isBooked) {
             return "Doctor is already booked on that date";
         }
+        appointment.setStatus(AppointmentStatus.SCHEDULED);
         appointmentRepo.save(appointment);
         return "Appointment saved successfully";
     }
@@ -55,15 +61,45 @@ public class AppointmentService {
         return count + " appointments cancelled";
     }
 
-    // Bonus +5: Pagination
     public Page<Appointment> getPage(Pageable pageable) {
         return appointmentRepo.findAll(pageable);
     }
 
-    // Bonus +5: Delete cancelled before
     @Transactional
     public String deleteCancelledBefore(Date date) {
         int count = appointmentRepo.deleteCancelledBefore(date);
         return count + " appointments deleted";
+    }
+
+    public String changeStatus(UUID id, AppointmentStatus newStatus) {
+        Appointment appointment = appointmentRepo.findById(id).orElse(null);
+        if (appointment == null) return "The appointment with that id does not exist";
+        AppointmentStatus current = appointment.getStatus();
+        boolean allowed = false;
+        if (current == AppointmentStatus.SCHEDULED && (newStatus == AppointmentStatus.CONFIRMED || newStatus == AppointmentStatus.CANCELLED)) allowed = true;
+        if (current == AppointmentStatus.CONFIRMED && (newStatus == AppointmentStatus.COMPLETED || newStatus == AppointmentStatus.CANCELLED)) allowed = true;
+        if (!allowed) return "Cannot change status from " + current + " to " + newStatus;
+        appointment.setStatus(newStatus);
+        appointmentRepo.save(appointment);
+        return "Appointment status updated successfully";
+    }
+
+    public String reschedule(UUID id, Date newDate) {
+        Appointment appointment = appointmentRepo.findById(id).orElse(null);
+        if (appointment == null) return "The appointment with that id does not exist";
+        if (appointment.getStatus() == AppointmentStatus.COMPLETED) return "A COMPLETED appointment cannot be rescheduled";
+        if (appointment.getStatus() == AppointmentStatus.CANCELLED) return "A CANCELLED appointment cannot be rescheduled";
+        Date today = Date.valueOf(LocalDate.now());
+        if (newDate.before(today)) return "Appointment date cannot be in the past";
+        boolean isBooked = appointmentRepo.existsByDoctorIdAndAppointmentDateAndStatusNot(
+                appointment.getDoctor().getId(),
+                newDate,
+                AppointmentStatus.CANCELLED
+        );
+        if (isBooked) return "Doctor is already booked on that date";
+        appointment.setAppointmentDate(newDate);
+        appointment.setStatus(AppointmentStatus.SCHEDULED);
+        appointmentRepo.save(appointment);
+        return "Appointment rescheduled successfully";
     }
 }
