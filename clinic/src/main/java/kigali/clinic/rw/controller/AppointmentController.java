@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import kigali.clinic.rw.domain.Appointment;
 import kigali.clinic.rw.domain.AppointmentStatus;
+import kigali.clinic.rw.repository.PrescriptionRepository;
 import kigali.clinic.rw.service.AppointmentService;
 
 @RestController
@@ -30,6 +32,9 @@ public class AppointmentController {
 
     @Autowired
     private AppointmentService appointmentService;
+
+    @Autowired
+    private PrescriptionRepository prescriptionRepo;
 
     @PostMapping("/save")
     public ResponseEntity<String> saveAppointment(@RequestBody Appointment appointment) {
@@ -69,7 +74,7 @@ public class AppointmentController {
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<String> changeStatus(@org.springframework.web.bind.annotation.PathVariable UUID id, @RequestParam AppointmentStatus status) {
+    public ResponseEntity<String> changeStatus(@PathVariable UUID id, @RequestParam AppointmentStatus status) {
         String result = appointmentService.changeStatus(id, status);
         if (result.contains("does not exist")) {
             return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
@@ -81,7 +86,7 @@ public class AppointmentController {
     }
 
     @PatchMapping("/{id}/reschedule")
-    public ResponseEntity<String> reschedule(@org.springframework.web.bind.annotation.PathVariable UUID id, @RequestParam String newDate) {
+    public ResponseEntity<String> reschedule(@PathVariable UUID id, @RequestParam String newDate) {
         String result = appointmentService.reschedule(id, Date.valueOf(newDate));
         if (result.contains("does not exist")) {
             return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
@@ -110,5 +115,17 @@ public class AppointmentController {
     @DeleteMapping("/cancelled-before")
     public String deleteCancelledBefore(@RequestParam String date) {
         return appointmentService.deleteCancelledBefore(Date.valueOf(date));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteAppointment(@PathVariable UUID id) {
+        if (!appointmentService.existsById(id)) {
+            return new ResponseEntity<>("The appointment with that id does not exist", HttpStatus.NOT_FOUND);
+        }
+        if (prescriptionRepo.existsByAppointmentId(id)) {
+            return new ResponseEntity<>("That appointment has prescriptions, delete them first", HttpStatus.CONFLICT);
+        }
+        appointmentService.deleteById(id);
+        return new ResponseEntity<>("Appointment deleted successfully", HttpStatus.OK);
     }
 }

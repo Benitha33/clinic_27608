@@ -102,4 +102,12 @@ public class AppointmentService {
         appointmentRepo.save(appointment);
         return "Appointment rescheduled successfully";
     }
+
+    public boolean existsById(UUID id) {
+        return appointmentRepo.existsById(id);
+    }
+
+    public void deleteById(UUID id) {
+        appointmentRepo.deleteById(id);
+    }
 }
