@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -79,6 +80,18 @@ public class DoctorController {
             return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
         }
         if (result.equals("The doctor does not have that specialization")) {
+            return new ResponseEntity<>(result, HttpStatus.CONFLICT);
+        }
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    @PatchMapping("/{doctorId}/office")
+    public ResponseEntity<String> changeOffice(@PathVariable UUID doctorId, @RequestParam int officeNumber) {
+        String result = doctorService.changeOffice(doctorId, officeNumber);
+        if (result.equals("The doctor with that id does not exist") || result.equals("The office with that office number does not exist")) {
+            return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+        }
+        if (result.equals("That office is taken by other doctor")) {
             return new ResponseEntity<>(result, HttpStatus.CONFLICT);
         }
         return new ResponseEntity<>(result, HttpStatus.OK);

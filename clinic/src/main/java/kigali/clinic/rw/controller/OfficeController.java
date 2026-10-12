@@ -29,7 +29,11 @@ public class OfficeController {
         return new ResponseEntity<>(returnedMessage, HttpStatus.CREATED);
     }
 
-    // C3: Busiest office
+    @GetMapping("/free")
+    public List<Office> getFreeOffices() {
+        return officeService.getFreeOffices();
+    }
+
     @GetMapping("/busiest")
     public ResponseEntity<?> getBusiestOffice() {
         List<Object[]> result = officeService.getBusiestOffice();

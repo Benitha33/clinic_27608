@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import kigali.clinic.rw.domain.Doctor;
+import kigali.clinic.rw.domain.Office;
 
 @Repository
 public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
@@ -21,4 +22,6 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
 
     @Query("SELECT d.firstName, d.lastName, COUNT(a) FROM Doctor d LEFT JOIN d.appointments a GROUP BY d.id, d.firstName, d.lastName ORDER BY COUNT(a) DESC")
     List<Object[]> countAppointmentsPerDoctor();
+
+    boolean existsByOfficeAndIdNot(Office office, UUID id);
 }

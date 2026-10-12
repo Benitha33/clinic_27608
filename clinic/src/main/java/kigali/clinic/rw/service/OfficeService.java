@@ -30,7 +30,10 @@ public class OfficeService {
         }
     }
 
-    // C3: Busiest office
+    public List<Office> getFreeOffices() {
+        return officeRepo.findFreeOffices();
+    }
+
     public List<Object[]> getBusiestOffice() {
         return officeRepo.findBusiestOffice();
     }
