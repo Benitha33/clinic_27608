@@ -5,8 +5,13 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -53,27 +58,34 @@ public class AppointmentController {
         return appointmentService.getBetweenDates(Date.valueOf(start), Date.valueOf(end));
     }
 
-    // C1
-    @GetMapping("/status/by-status")
+    // C1 (path fixed to /stats/by-status)
+    @GetMapping("/stats/by-status")
     public List<Object[]> getCountPerStatus() {
         return appointmentService.getCountPerStatus();
     }
 
-    // C3
-    @GetMapping("/busiest-office")
-    public List<Object[]> getBusiestOffice() {
-        return appointmentService.getBusiestOffice();
-    }
-
-    // C4 (Bonus)
+    // C4
     @PatchMapping("/cancel-day")
     public String cancelDay(@RequestParam UUID doctorId, @RequestParam String date) {
         return appointmentService.cancelAppointmentsForDay(doctorId, Date.valueOf(date));
     }
 
-    // Slide 4 #4
-    @GetMapping("/by-specialization")
-    public List<Appointment> getBySpecialization(@RequestParam String specName) {
-        return appointmentService.getByDoctorSpecialization(specName);
+    // Bonus +5: Pagination
+    @GetMapping("/page")
+    public Page<Appointment> getPage(
+            @RequestParam int page,
+            @RequestParam int size,
+            @RequestParam String sort) {
+        String[] parts = sort.split(",");
+        Sort.Direction direction = parts[1].equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, parts[0]));
+        return appointmentService.getPage(pageable);
+    }
+
+    // Bonus +5: Delete cancelled before date
+    @DeleteMapping("/cancelled-before")
+    public String deleteCancelledBefore(@RequestParam String date) {
+        return appointmentService.deleteCancelledBefore(Date.valueOf(date));
     }
 }

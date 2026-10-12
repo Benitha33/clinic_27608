@@ -25,13 +25,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
     @Query("SELECT a.status, COUNT(a) FROM Appointment a GROUP BY a.status")
     List<Object[]> countAppointmentsByStatus();
 
-    @Query("SELECT o.name, o.officeNumber, COUNT(a) FROM Appointment a JOIN a.doctor d JOIN d.office o GROUP BY o.id, o.name, o.officeNumber ORDER BY COUNT(a) DESC")
-    List<Object[]> findBusiestOffice();
-
     @Modifying
     @Query("UPDATE Appointment a SET a.status = 'CANCELLED' WHERE a.doctor.id = :doctorId AND a.appointmentDate = :date AND a.status <> 'COMPLETED'")
     int cancelAppointmentsForDoctorOnDate(@Param("doctorId") UUID doctorId, @Param("date") Date date);
 
-    @Query("SELECT a FROM Appointment a JOIN a.doctor d JOIN d.specializations s WHERE LOWER(s.name) = LOWER(:specName)")
-    List<Appointment> findAppointmentsByDoctorSpecialization(@Param("specName") String specName);
+    // Bonus +5: Delete CANCELLED before a date
+    @Modifying
+    @Query("DELETE FROM Appointment a WHERE a.status = 'CANCELLED' AND a.appointmentDate < :date")
+    int deleteCancelledBefore(@Param("date") Date date);
 }

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +21,6 @@ public class AppointmentService {
     private AppointmentRepository appointmentRepo;
 
     public String saveAppointment(Appointment appointment) {
-        // A4: No double booking check
         boolean isBooked = appointmentRepo.existsByDoctorIdAndAppointmentDateAndStatusNot(
                 appointment.getDoctor().getId(),
                 appointment.getAppointmentDate(),
@@ -36,35 +37,33 @@ public class AppointmentService {
         return appointmentRepo.findAll();
     }
 
-    // A2
     public List<Appointment> getByStatus(AppointmentStatus status) {
         return appointmentRepo.findByStatusOrderByAppointmentDateAsc(status);
     }
 
-    // A3
     public List<Appointment> getBetweenDates(Date start, Date end) {
         return appointmentRepo.findByAppointmentDateBetweenOrderByAppointmentDateAsc(start, end);
     }
 
-    // C1
     public List<Object[]> getCountPerStatus() {
         return appointmentRepo.countAppointmentsByStatus();
     }
 
-    // C3
-    public List<Object[]> getBusiestOffice() {
-        return appointmentRepo.findBusiestOffice();
-    }
-
-    // C4 (Bonus)
     @Transactional
     public String cancelAppointmentsForDay(UUID doctorId, Date date) {
         int count = appointmentRepo.cancelAppointmentsForDoctorOnDate(doctorId, date);
         return count + " appointments cancelled";
     }
 
-    // Slide 4 #4
-    public List<Appointment> getByDoctorSpecialization(String specName) {
-        return appointmentRepo.findAppointmentsByDoctorSpecialization(specName);
+    // Bonus +5: Pagination
+    public Page<Appointment> getPage(Pageable pageable) {
+        return appointmentRepo.findAll(pageable);
+    }
+
+    // Bonus +5: Delete cancelled before
+    @Transactional
+    public String deleteCancelledBefore(Date date) {
+        int count = appointmentRepo.deleteCancelledBefore(date);
+        return count + " appointments deleted";
     }
 }
