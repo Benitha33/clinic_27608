@@ -1,14 +1,18 @@
 package kigali.clinic.rw.service;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import kigali.clinic.rw.domain.Appointment;
+import kigali.clinic.rw.domain.AppointmentStatus;
 import kigali.clinic.rw.domain.Doctor;
 import kigali.clinic.rw.domain.Office;
 import kigali.clinic.rw.domain.Specialization;
+import kigali.clinic.rw.repository.AppointmentRepository;
 import kigali.clinic.rw.repository.DoctorRepository;
 import kigali.clinic.rw.repository.OfficeRepository;
 import kigali.clinic.rw.repository.SpecializationRepository;
@@ -24,6 +28,9 @@ public class DoctorService {
 
     @Autowired
     private OfficeRepository officeRepo;
+
+    @Autowired
+    private AppointmentRepository appointmentRepo;
 
     public String saveDoctor(Doctor doctor) {
         doctorRepo.save(doctor);
@@ -48,6 +55,18 @@ public class DoctorService {
 
     public List<Object[]> getAppointmentCountPerDoctor() {
         return doctorRepo.countAppointmentsPerDoctor();
+    }
+
+    public List<Doctor> searchByName(String text) {
+        return doctorRepo.searchByName(text);
+    }
+
+    public List<Appointment> getAgenda(UUID doctorId, Date date) {
+        return appointmentRepo.findByDoctorIdAndAppointmentDateAndStatusNot(doctorId, date, AppointmentStatus.CANCELLED);
+    }
+
+    public List<Object[]> getWorkload(Date start, Date end) {
+        return appointmentRepo.findDoctorWorkload(start, end);
     }
 
     public String addSpecialization(UUID doctorId, UUID specializationId) {

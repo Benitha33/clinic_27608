@@ -22,6 +22,14 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
 
     boolean existsByDoctorIdAndAppointmentDateAndStatusNot(UUID doctorId, Date appointmentDate, AppointmentStatus status);
 
+    List<Appointment> findByDoctorIdAndAppointmentDateAndStatusNot(UUID doctorId, Date appointmentDate, AppointmentStatus status);
+
+    List<Appointment> findByPatientIdAndAppointmentDateGreaterThanEqualAndStatusInOrderByAppointmentDateAsc(UUID patientId, Date date, List<AppointmentStatus> statuses);
+
+    long countByStatus(AppointmentStatus status);
+
+    long countByAppointmentDate(Date appointmentDate);
+
     @Query("SELECT a.status, COUNT(a) FROM Appointment a GROUP BY a.status")
     List<Object[]> countAppointmentsByStatus();
 
@@ -29,8 +37,10 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
     @Query("UPDATE Appointment a SET a.status = 'CANCELLED' WHERE a.doctor.id = :doctorId AND a.appointmentDate = :date AND a.status <> 'COMPLETED'")
     int cancelAppointmentsForDoctorOnDate(@Param("doctorId") UUID doctorId, @Param("date") Date date);
 
-    // Bonus +5: Delete CANCELLED before a date
     @Modifying
     @Query("DELETE FROM Appointment a WHERE a.status = 'CANCELLED' AND a.appointmentDate < :date")
     int deleteCancelledBefore(@Param("date") Date date);
+
+    @Query("SELECT a.doctor.firstName, a.doctor.lastName, COUNT(a) FROM Appointment a WHERE a.status = 'COMPLETED' AND a.appointmentDate BETWEEN :start AND :end GROUP BY a.doctor.id, a.doctor.firstName, a.doctor.lastName ORDER BY COUNT(a) DESC")
+    List<Object[]> findDoctorWorkload(@Param("start") Date start, @Param("end") Date end);
 }

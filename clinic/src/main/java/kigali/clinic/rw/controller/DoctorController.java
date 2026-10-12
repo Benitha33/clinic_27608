@@ -1,5 +1,6 @@
 package kigali.clinic.rw.controller;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,15 +38,6 @@ public class DoctorController {
         return doctorService.getAllDoctors();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Doctor> getDoctorById(@PathVariable UUID id) {
-        Doctor doctor = doctorService.getDoctorById(id);
-        if (doctor == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(doctor, HttpStatus.OK);
-    }
-
     @GetMapping("/by-specialization")
     public List<Doctor> getDoctorsBySpecialization(@RequestParam String name) {
         return doctorService.getDoctorsBySpecialization(name);
@@ -59,6 +51,33 @@ public class DoctorController {
     @GetMapping("/appointment-counts")
     public List<Object[]> getAppointmentCounts() {
         return doctorService.getAppointmentCountPerDoctor();
+    }
+
+    @GetMapping("/search")
+    public List<Doctor> search(@RequestParam String name) {
+        return doctorService.searchByName(name);
+    }
+
+    @GetMapping("/workload")
+    public List<Object[]> workload(@RequestParam String start, @RequestParam String end) {
+        return doctorService.getWorkload(Date.valueOf(start), Date.valueOf(end));
+    }
+
+    @GetMapping("/{doctorId}/agenda")
+    public ResponseEntity<?> agenda(@PathVariable UUID doctorId, @RequestParam String date) {
+        if (doctorService.getDoctorById(doctorId) == null) {
+            return new ResponseEntity<>("The doctor with that id does not exist", HttpStatus.NOT_FOUND);
+        }
+        return ResponseEntity.ok(doctorService.getAgenda(doctorId, Date.valueOf(date)));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Doctor> getDoctorById(@PathVariable UUID id) {
+        Doctor doctor = doctorService.getDoctorById(id);
+        if (doctor == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(doctor, HttpStatus.OK);
     }
 
     @PutMapping("/{doctorId}/specializations/{specializationId}")

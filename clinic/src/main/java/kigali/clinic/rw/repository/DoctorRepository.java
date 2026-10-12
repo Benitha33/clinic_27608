@@ -23,5 +23,8 @@ public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
     @Query("SELECT d.firstName, d.lastName, COUNT(a) FROM Doctor d LEFT JOIN d.appointments a GROUP BY d.id, d.firstName, d.lastName ORDER BY COUNT(a) DESC")
     List<Object[]> countAppointmentsPerDoctor();
 
+    @Query("SELECT d FROM Doctor d WHERE LOWER(d.firstName) LIKE LOWER(CONCAT('%', :text, '%')) OR LOWER(d.lastName) LIKE LOWER(CONCAT('%', :text, '%')) ORDER BY d.lastName ASC")
+    List<Doctor> searchByName(@Param("text") String text);
+
     boolean existsByOfficeAndIdNot(Office office, UUID id);
 }

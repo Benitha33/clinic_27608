@@ -38,13 +38,11 @@ public class PatientController {
         return patientService.getAllPatients();
     }
 
-    // A1
     @GetMapping("/by-last-name")
     public List<Patient> getByLastName(@RequestParam String lastName) {
         return patientService.getByLastName(lastName);
     }
 
-    // B4
     @GetMapping("/of-doctor/{doctorId}")
     public ResponseEntity<?> getPatientsOfDoctor(@PathVariable UUID doctorId) {
         if (!doctorRepository.existsById(doctorId)) {
@@ -53,9 +51,16 @@ public class PatientController {
         return ResponseEntity.ok(patientService.getPatientsOfDoctor(doctorId));
     }
 
-    // C2
     @GetMapping("/frequent")
     public List<Patient> getFrequentPatients(@RequestParam long min) {
         return patientService.getFrequentPatients(min);
+    }
+
+    @GetMapping("/{ssNumber}/upcoming")
+    public ResponseEntity<?> getUpcoming(@PathVariable String ssNumber) {
+        if (!patientService.existsBySsNumber(ssNumber)) {
+            return new ResponseEntity<>("That patient with that ssnumber does not exist", HttpStatus.NOT_FOUND);
+        }
+        return ResponseEntity.ok(patientService.getUpcoming(ssNumber));
     }
 }
