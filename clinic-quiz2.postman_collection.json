@@ -1,0 +1,201 @@
+{
+  "info": {
+    "name": "Kigali Clinic Quiz 2",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "value": "http://localhost:8080",
+      "key": "base"
+    },
+    {
+      "value": "f218d213-b502-453c-a5e2-24abb62a729c",
+      "key": "doctorId"
+    },
+    {
+      "value": "e87bdeca-0e3b-420f-bbb4-1ad43d13ac51",
+      "key": "specializationId"
+    },
+    {
+      "value": "2978df8a-c5a0-4162-9085-4811d9e253af",
+      "key": "appointmentId"
+    },
+    {
+      "value": "af9520af-d6fb-4ba6-a1dc-35f2abd08c0d",
+      "key": "prescriptionId"
+    },
+    {
+      "value": "SS-1004",
+      "key": "ssNumber"
+    },
+    {
+      "value": "104",
+      "key": "officeNumber"
+    }
+  ],
+  "item": [
+    {
+      "name": "A1 Add specialization to doctor",
+      "request": {
+        "method": "PUT",
+        "url": "{{base}}/api/doctors/{{doctorId}}/specializations/{{specializationId}}"
+      }
+    },
+    {
+      "name": "A2 Remove specialization from doctor",
+      "request": {
+        "method": "DELETE",
+        "url": "{{base}}/api/doctors/{{doctorId}}/specializations/{{specializationId}}"
+      }
+    },
+    {
+      "name": "A3 Free offices",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/offices/free"
+      }
+    },
+    {
+      "name": "A4 Move doctor to office",
+      "request": {
+        "method": "PATCH",
+        "url": "{{base}}/api/doctors/{{doctorId}}/office?officeNumber={{officeNumber}}"
+      }
+    },
+    {
+      "name": "B1 Safe booking (past rejected)",
+      "request": {
+        "body": {
+          "raw": "{\"appointmentDate\":\"2020-01-01\",\"reason\":\"Old\",\"doctor\":{\"id\":\"{{doctorId}}\"},\"patient\":{\"id\":\"ef80cb76-d7e4-4c29-ba2a-501ebe2ea4f0\"}}",
+          "mode": "raw"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "value": "application/json",
+            "key": "Content-Type"
+          }
+        ],
+        "url": "{{base}}/api/appointments/save"
+      }
+    },
+    {
+      "name": "B2 Status flow (SCHEDULED to COMPLETED blocked)",
+      "request": {
+        "method": "PATCH",
+        "url": "{{base}}/api/appointments/{{appointmentId}}/status?status=COMPLETED"
+      }
+    },
+    {
+      "name": "B3 Reschedule appointment",
+      "request": {
+        "method": "PATCH",
+        "url": "{{base}}/api/appointments/{{appointmentId}}/reschedule?newDate=2026-11-25"
+      }
+    },
+    {
+      "name": "C1 Write prescription",
+      "request": {
+        "body": {
+          "raw": "{\"medicineName\":\"Amoxicillin\",\"dosage\":\"1 tablet, 3 times a day\",\"durationDays\":7}",
+          "mode": "raw"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "value": "application/json",
+            "key": "Content-Type"
+          }
+        ],
+        "url": "{{base}}/api/prescriptions/save?appointmentId={{appointmentId}}"
+      }
+    },
+    {
+      "name": "C2 Prescriptions of an appointment",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/prescriptions/appointment/{{appointmentId}}"
+      }
+    },
+    {
+      "name": "C3 Prescription history of a patient",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/prescriptions/patient/{{ssNumber}}"
+      }
+    },
+    {
+      "name": "C4 Update prescription",
+      "request": {
+        "body": {
+          "raw": "{\"medicineName\":\"Amoxicillin\",\"dosage\":\"1 tablet, 2 times a day\",\"durationDays\":10}",
+          "mode": "raw"
+        },
+        "method": "PUT",
+        "header": [
+          {
+            "value": "application/json",
+            "key": "Content-Type"
+          }
+        ],
+        "url": "{{base}}/api/prescriptions/update/{{prescriptionId}}"
+      }
+    },
+    {
+      "name": "C4 Delete prescription",
+      "request": {
+        "method": "DELETE",
+        "url": "{{base}}/api/prescriptions/delete/{{prescriptionId}}"
+      }
+    },
+    {
+      "name": "C4 Appointment with prescriptions cannot be deleted",
+      "request": {
+        "method": "DELETE",
+        "url": "{{base}}/api/appointments/{{appointmentId}}"
+      }
+    },
+    {
+      "name": "D1 Doctor agenda",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/doctors/{{doctorId}}/agenda?date=2026-10-22"
+      }
+    },
+    {
+      "name": "D2 Patient upcoming appointments",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/patients/{{ssNumber}}/upcoming"
+      }
+    },
+    {
+      "name": "D3 Search doctors by name",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/doctors/search?name=gis"
+      }
+    },
+    {
+      "name": "D4 Clinic dashboard",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/dashboard/summary"
+      }
+    },
+    {
+      "name": "Bonus Top medicines",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/prescriptions/stats/top-medicines"
+      }
+    },
+    {
+      "name": "Bonus Doctor workload",
+      "request": {
+        "method": "GET",
+        "url": "{{base}}/api/doctors/workload?start=2026-01-01&end=2026-12-31"
+      }
+    }
+  ]
+}
